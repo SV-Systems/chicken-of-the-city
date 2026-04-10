@@ -136,6 +136,27 @@ export async function getSeoSettings(): Promise<SeoSettings> {
   return data.seoSetting;
 }
 
+export interface EmailSettings {
+  ownerSubject: string;
+  ownerBody: string;
+  customerSubject: string;
+  customerBody: string;
+}
+
+export async function getEmailSettings(): Promise<EmailSettings> {
+  const data = await fetchDatoCMS<{ emailSetting: EmailSettings }>(`
+    query {
+      emailSetting {
+        ownerSubject
+        ownerBody
+        customerSubject
+        customerBody
+      }
+    }
+  `);
+  return data.emailSetting;
+}
+
 export async function getBrandSettings(): Promise<BrandSettings> {
   const data = await fetchDatoCMS<{ brandSetting: BrandSettings }>(`
     query {

@@ -1,5 +1,11 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
+import { Resend } from 'resend';
+import { getEmailSettings, getRestaurantInfo } from '@/lib/datocms';
+
+function fillTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`);
+}
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -9,7 +15,6 @@ export async function POST(request: NextRequest) {
     return new Response('Brak podpisu Stripe.', { status: 400 });
   }
 
-  // Stripe wymaga surowego body (nie parsowanego JSON) do weryfikacji podpisu
   const body = await request.text();
 
   let event: Stripe.Event;
@@ -20,37 +25,96 @@ export async function POST(request: NextRequest) {
     return new Response('Nieprawidłowy podpis.', { status: 400 });
   }
 
-  // --- Obsługa zdarzeń ---
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      const customerEmail = session.customer_details?.email ?? 'brak';
-      const customerName = session.customer_details?.name ?? 'brak';
+      const customerEmail = session.customer_details?.email ?? '';
+      const customerName = session.customer_details?.name ?? 'Klient';
       const amountTotal = ((session.amount_total ?? 0) / 100).toFixed(2);
+      const orderId = session.id;
+
+      // Zbierz uwagi z metadata sesji (format: uwaga_1 = "Produkt: treść")
+      const notes = Object.entries(session.metadata ?? {})
+        .filter(([k]) => k.startsWith('uwaga_'))
+        .map(([, v]) => `• ${v}`)
+        .join('\n');
+
+      // Pobierz pozycje zamówienia ze Stripe
+      let itemsText = '';
+      try {
+        const lineItems = await stripe.checkout.sessions.listLineItems(orderId, { limit: 100 });
+        itemsText = lineItems.data
+          .map(li => `• ${li.description} × ${li.quantity}`)
+          .join('\n');
+      } catch (err) {
+        console.error('[webhook] Błąd pobierania line items:', err);
+        itemsText = '(brak szczegółów)';
+      }
 
       console.log(
-        `[webhook] Nowe zamówienie #${session.id}\n` +
+        `[webhook] Nowe zamówienie #${orderId}\n` +
           `  Klient: ${customerName} <${customerEmail}>\n` +
           `  Kwota: ${amountTotal} PLN`
       );
 
-      /*
-       * TODO (Faza 5 — e-maile):
-       * Skonfiguruj wybraną usługę e-mail (np. Resend, SendGrid, nodemailer + SMTP)
-       * i wyślij tutaj powiadomienie do restauratora na adres z env RESTAURANT_EMAIL.
-       *
-       * Przykład z Resend:
-       *   await resend.emails.send({
-       *     from: 'zamowienia@twojadomena.pl',
-       *     to: process.env.RESTAURANT_EMAIL,
-       *     subject: `Nowe zamówienie — ${amountTotal} PLN`,
-       *     text: `Klient: ${customerName}\nE-mail: ${customerEmail}\nKwota: ${amountTotal} PLN`,
-       *   });
-       *
-       * Potwierdzenie dla klienta: Stripe wysyła je automatycznie
-       * jeśli w Stripe Dashboard > Settings > Customer emails masz włączone "Receipts".
-       */
+      // Wyślij maile tylko gdy klucz Resend jest skonfigurowany
+      if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) {
+        console.warn('[webhook] Brak RESEND_API_KEY lub RESEND_FROM — pomijam wysyłkę maili.');
+        break;
+      }
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      let emailSettings, restaurantInfo;
+      try {
+        [emailSettings, restaurantInfo] = await Promise.all([
+          getEmailSettings(),
+          getRestaurantInfo(),
+        ]);
+      } catch (err) {
+        console.error('[webhook] Błąd pobierania ustawień z DatoCMS:', err);
+        break;
+      }
+
+      const vars: Record<string, string> = {
+        name: customerName,
+        email: customerEmail,
+        amount: amountTotal,
+        orderId,
+        items: itemsText,
+        notes: notes || 'brak',
+      };
+
+      // Mail do właściciela
+      if (restaurantInfo.email) {
+        try {
+          await resend.emails.send({
+            from: process.env.RESEND_FROM,
+            to: restaurantInfo.email,
+            subject: fillTemplate(emailSettings.ownerSubject, vars),
+            text: fillTemplate(emailSettings.ownerBody, vars),
+          });
+          console.log(`[webhook] Mail do właściciela wysłany → ${restaurantInfo.email}`);
+        } catch (err) {
+          console.error('[webhook] Błąd wysyłki maila do właściciela:', err);
+        }
+      }
+
+      // Mail do klienta
+      if (customerEmail) {
+        try {
+          await resend.emails.send({
+            from: process.env.RESEND_FROM,
+            to: customerEmail,
+            subject: fillTemplate(emailSettings.customerSubject, vars),
+            text: fillTemplate(emailSettings.customerBody, vars),
+          });
+          console.log(`[webhook] Mail do klienta wysłany → ${customerEmail}`);
+        } catch (err) {
+          console.error('[webhook] Błąd wysyłki maila do klienta:', err);
+        }
+      }
 
       break;
     }
@@ -62,7 +126,6 @@ export async function POST(request: NextRequest) {
     }
 
     default:
-      // Ignoruj inne zdarzenia
       break;
   }
 
