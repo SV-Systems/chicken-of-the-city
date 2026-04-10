@@ -186,6 +186,9 @@ export default function CartDrawer() {
                       <textarea
                         value={item.note ?? ''}
                         onChange={(e) => setNote(item.id, e.target.value)}
+                        onBlur={() => {
+                          if (!item.note) toggleNote(item.id);
+                        }}
                         placeholder="Uwagi do pozycji (np. bez cebuli)"
                         maxLength={300}
                         rows={2}
