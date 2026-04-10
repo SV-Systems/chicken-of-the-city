@@ -205,3 +205,9 @@ Kliknij **Publish** — żadna edycja kodu nie jest potrzebna.
 | Inny kolor wiodący | Pole **Brand Color** w DatoCMS (np. `#dc2626` dla czerwonego) |
 | Inna waluta niż PLN | `app/api/checkout/route.ts` — zmiana `'pln'` (jedyna edycja kodu) |
 | Logo zamiast tekstu | Podmiana `<span>` w `Header.tsx` na `<Image>` |
+
+## Znane pułapki
+
+### DatoCMS webhook — sync produktów nie działa
+
+Przy konfiguracji webhooka Supabase sync w DatoCMS (Settings → Webhooks) w sekcji **Events** musisz zaznaczyć **update** oprócz publish/unpublish. Samo Save w DatoCMS nie triggeruje publish — są to osobne eventy. Bez `update` webhook odpali się tylko przy pierwszym publikowaniu rekordu, a nie przy każdej zmianie.
