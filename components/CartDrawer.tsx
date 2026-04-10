@@ -129,6 +129,7 @@ export default function CartDrawer({ minimumOrderAmount }: CartDrawerProps) {
                         alt={item.image.alt || item.name}
                         fill
                         sizes="64px"
+                        quality={70}
                         className="object-contain p-1"
                       />
                     ) : (
