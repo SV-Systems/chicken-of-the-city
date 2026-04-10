@@ -10,7 +10,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, fallbackEmoji = '🍽️' }: ProductCardProps) {
-  const { addToCart, openCart } = useCart();
+  const { addToCart } = useCart();
   const priceFormatted = product.price.toFixed(2).replace('.', ',');
 
   return (
@@ -52,7 +52,7 @@ export default function ProductCard({ product, fallbackEmoji = '🍽️' }: Prod
             {priceFormatted} zł
           </span>
           <button
-            onClick={() => { addToCart(product); openCart(); }}
+            onClick={() => addToCart(product)}
             className="btn-brand rounded-full px-4 py-2 text-sm font-semibold text-white active:scale-95"
           >
             Dodaj

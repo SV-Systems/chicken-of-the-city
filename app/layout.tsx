@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
+import CartWidget from '@/components/CartWidget';
 import { CartProvider } from '@/context/CartContext';
 import { getRestaurantInfo, getSeoSettings, getBrandSettings } from '@/lib/datocms';
 import type { BrandSettings } from '@/lib/datocms';
@@ -93,6 +94,7 @@ export default async function RootLayout({
             restaurantTagline={brand.restaurantTagline}
           />
           <CartDrawer />
+          <CartWidget />
         </CartProvider>
       </body>
     </html>
