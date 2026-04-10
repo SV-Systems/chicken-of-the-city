@@ -26,7 +26,7 @@ export default function Header({ restaurantName, restaurantTagline }: HeaderProp
             href="/"
             className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900"
           >
-            Menu
+            Strona główna
           </Link>
           <Link
             href="/menu"

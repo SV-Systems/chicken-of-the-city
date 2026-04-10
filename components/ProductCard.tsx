@@ -14,7 +14,10 @@ export default function ProductCard({ product, fallbackEmoji = '🍽️' }: Prod
   const priceFormatted = product.price.toFixed(2).replace('.', ',');
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+      {/* Gradient accent bar */}
+      <div className="card-brand-bar h-1 w-full" />
+
       <div className="relative h-48 w-full bg-zinc-100">
         {product.image ? (
           <Image
@@ -22,7 +25,7 @@ export default function ProductCard({ product, fallbackEmoji = '🍽️' }: Prod
             alt={product.image.alt || product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             quality={80}
           />
         ) : (
@@ -48,8 +51,8 @@ export default function ProductCard({ product, fallbackEmoji = '🍽️' }: Prod
         )}
 
         <div className="mt-auto flex items-center justify-between pt-4">
-          <span className="text-lg font-bold text-zinc-900">
-            {priceFormatted} zł
+          <span className="text-lg font-black text-zinc-900">
+            {priceFormatted} <span className="text-sm font-semibold text-zinc-500">zł</span>
           </span>
           <button
             onClick={() => addToCart(product)}

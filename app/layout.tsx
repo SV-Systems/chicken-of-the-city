@@ -22,6 +22,7 @@ const BRAND_FALLBACK: BrandSettings = {
   heroSubtitle: 'Świeże składniki, wyjątkowe smaki. Zamów teraz i odbierz gotowe danie.',
   categoryEmoji: '🍗',
   brandColor: '#f97316',
+  secondaryColor: '#1d4ed8',
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -79,7 +80,10 @@ export default async function RootLayout({
     <html
       lang="pl"
       className={geist.className}
-      style={{ '--brand': brand.brandColor } as React.CSSProperties}
+      style={{
+        '--brand': brand.brandColor,
+        '--secondary': brand.secondaryColor || '#1d4ed8',
+      } as React.CSSProperties}
     >
       <body className="flex min-h-screen flex-col bg-zinc-50">
         <CartProvider>

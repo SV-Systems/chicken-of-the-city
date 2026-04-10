@@ -55,6 +55,7 @@ export interface BrandSettings {
   heroSubtitle: string;
   categoryEmoji: string;
   brandColor: string;
+  secondaryColor: string;
 }
 
 // --- Queries ---
@@ -147,6 +148,7 @@ export async function getBrandSettings(): Promise<BrandSettings> {
         heroSubtitle
         categoryEmoji
         brandColor
+        secondaryColor
       }
     }
   `);

@@ -4,13 +4,20 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Brand color — overridden dynamically from DatoCMS via layout.tsx */
+  /* Primary brand color — overridden dynamically from DatoCMS via layout.tsx */
   --brand: #f97316;
   --brand-dark: color-mix(in srgb, var(--brand) 82%, black);
   --brand-light: color-mix(in srgb, var(--brand) 72%, white);
   --brand-deep: color-mix(in srgb, var(--brand) 18%, black);
   --brand-subtle-bg: color-mix(in srgb, var(--brand) 12%, white);
   --brand-subtle-text: color-mix(in srgb, var(--brand) 80%, #333);
+
+  /* Secondary color — overridden dynamically from DatoCMS via layout.tsx */
+  --secondary: #1d4ed8;
+  --secondary-dark: color-mix(in srgb, var(--secondary) 82%, black);
+  --secondary-light: color-mix(in srgb, var(--secondary) 70%, white);
+  --secondary-deep: color-mix(in srgb, var(--secondary) 18%, black);
+  --secondary-subtle-bg: color-mix(in srgb, var(--secondary) 10%, white);
 }
 
 @theme inline {
@@ -20,25 +27,18 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Brand color utility classes */
+/* ── Primary brand utilities ─────────────────────────────── */
 .text-brand        { color: var(--brand); }
 .text-brand-light  { color: var(--brand-light); }
 .text-brand-subtle { color: var(--brand-subtle-text); }
 .bg-brand-subtle   { background-color: var(--brand-subtle-bg); }
-.border-brand-hover:hover { border-color: var(--brand-light); }
+.border-brand-hover:hover { border-color: var(--brand); }
 
 .link-brand       { color: var(--brand); }
 .link-brand:hover { color: var(--brand-dark); }
@@ -49,4 +49,32 @@ body {
 }
 .btn-brand:hover:not(:disabled) {
   filter: brightness(0.88);
+}
+
+/* ── Secondary color utilities ───────────────────────────── */
+.text-secondary        { color: var(--secondary); }
+.text-secondary-light  { color: var(--secondary-light); }
+.bg-secondary-subtle   { background-color: var(--secondary-subtle-bg); }
+
+.btn-secondary {
+  background-color: var(--secondary);
+  transition: filter 0.15s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  filter: brightness(0.88);
+}
+
+/* ── Hero gradient ───────────────────────────────────────── */
+.hero-gradient {
+  background: linear-gradient(
+    135deg,
+    #111113 0%,
+    color-mix(in srgb, var(--brand-deep) 60%, #111113) 50%,
+    color-mix(in srgb, var(--secondary-deep) 50%, #111113) 100%
+  );
+}
+
+/* ── Card accent bar ─────────────────────────────────────── */
+.card-brand-bar {
+  background: linear-gradient(90deg, var(--brand), var(--secondary));
 }

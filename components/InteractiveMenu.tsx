@@ -18,18 +18,23 @@ export default function InteractiveMenu({ categories, products, fallbackEmoji }:
     : products;
 
   return (
-    <section className="py-16">
+    <section className="bg-zinc-50 py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <h2 className="mb-8 text-2xl font-bold text-zinc-900">Nasze menu</h2>
+        <div className="mb-10">
+          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-brand">
+            Pełna oferta
+          </p>
+          <h2 className="text-3xl font-black text-zinc-900">Nasze menu</h2>
+        </div>
 
         {/* Zakładki kategorii */}
-        <div className="mb-8 flex flex-wrap gap-2">
+        <div className="mb-10 flex flex-wrap gap-2">
           <button
             onClick={() => setActiveCategory(null)}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+            className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
               activeCategory === null
-                ? 'btn-brand text-white'
-                : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-400 hover:text-zinc-900'
+                ? 'btn-brand text-white shadow-md'
+                : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900'
             }`}
           >
             Wszystkie
@@ -38,11 +43,16 @@ export default function InteractiveMenu({ categories, products, fallbackEmoji }:
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                 activeCategory === cat.id
-                  ? 'btn-brand text-white'
-                  : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-400 hover:text-zinc-900'
+                  ? 'text-white shadow-md'
+                  : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900'
               }`}
+              style={
+                activeCategory === cat.id
+                  ? { background: 'var(--secondary)' }
+                  : undefined
+              }
             >
               {cat.name}
             </button>
@@ -50,13 +60,13 @@ export default function InteractiveMenu({ categories, products, fallbackEmoji }:
         </div>
 
         {/* Siatka produktów */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} fallbackEmoji={fallbackEmoji} />
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((product) => (
+              <ProductCard key={product.id} product={product} fallbackEmoji={fallbackEmoji} />
+            ))}
+          </div>
+        ) : (
           <p className="py-12 text-center text-zinc-500">Brak dań w tej kategorii.</p>
         )}
       </div>
