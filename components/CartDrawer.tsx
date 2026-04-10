@@ -106,7 +106,7 @@ export default function CartDrawer() {
                         alt={item.image.alt || item.name}
                         fill
                         sizes="64px"
-                        className="object-cover"
+                        className="object-contain p-1"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-2xl">

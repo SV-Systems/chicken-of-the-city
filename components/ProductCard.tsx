@@ -15,14 +15,14 @@ export default function ProductCard({ product, fallbackEmoji = '🍽️' }: Prod
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="relative h-48 w-full bg-zinc-100">
+      <div className="relative h-48 w-full bg-white">
         {product.image ? (
           <Image
             src={product.image.url}
             alt={product.image.alt || product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover"
+            className="object-contain p-3"
             quality={80}
           />
         ) : (
