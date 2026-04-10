@@ -32,7 +32,12 @@ export async function POST(request: NextRequest) {
       const customerEmail = session.customer_details?.email ?? '';
       const customerName = session.customer_details?.name ?? 'Klient';
       const amountTotal = ((session.amount_total ?? 0) / 100).toFixed(2);
-      const orderId = session.id;
+      const stripeSessionId = session.id;
+
+      // Krótki numer zamówienia oparty na czasie sesji, np. "260410-1423"
+      const sessionDate = new Date((session.created ?? Date.now() / 1000) * 1000);
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const orderId = `${sessionDate.getFullYear().toString().slice(2)}${pad(sessionDate.getMonth() + 1)}${pad(sessionDate.getDate())}-${pad(sessionDate.getHours())}${pad(sessionDate.getMinutes())}`;
 
       // Zbierz uwagi z metadata sesji (format: uwaga_1 = "Produkt: treść")
       const notes = Object.entries(session.metadata ?? {})
@@ -43,7 +48,7 @@ export async function POST(request: NextRequest) {
       // Pobierz pozycje zamówienia ze Stripe
       let itemsText = '';
       try {
-        const lineItems = await stripe.checkout.sessions.listLineItems(orderId, { limit: 100 });
+        const lineItems = await stripe.checkout.sessions.listLineItems(stripeSessionId, { limit: 100 });
         itemsText = lineItems.data
           .map(li => `• ${li.description} × ${li.quantity}`)
           .join('\n');
@@ -53,7 +58,7 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(
-        `[webhook] Nowe zamówienie #${orderId}\n` +
+        `[webhook] Nowe zamówienie #${orderId} (Stripe: ${stripeSessionId})\n` +
           `  Klient: ${customerName} <${customerEmail}>\n` +
           `  Kwota: ${amountTotal} PLN`
       );
