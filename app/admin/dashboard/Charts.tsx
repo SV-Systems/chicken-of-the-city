@@ -1,54 +1,81 @@
 'use client';
 
+import { useState } from 'react';
 import {
-  LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 
-interface DailyData {
-  date: string;
-  zamówienia: number;
-  przychód: number;
-}
-
-interface ProductData {
-  name: string;
-  quantity: number;
-  revenue: number;
-}
+interface RevenuePoint { date: string; przychód: number; }
+interface ProductData { name: string; quantity: number; revenue: number; }
 
 interface Props {
-  dailyData: DailyData[];
+  dailyData: RevenuePoint[];
+  monthlyData: RevenuePoint[];
   topProducts: ProductData[];
 }
 
-export default function Charts({ dailyData, topProducts }: Props) {
+type View = '30d' | '12m';
+
+export default function Charts({ dailyData, monthlyData, topProducts }: Props) {
+  const [view, setView] = useState<View>('30d');
+  const data = view === '30d' ? dailyData : monthlyData;
+  const label = view === '30d' ? 'Ostatnie 30 dni' : 'Ostatnie 12 miesięcy';
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-      {/* Line chart — ostatnie 30 dni */}
+      {/* Przychód */}
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:col-span-3">
-        <h2 className="mb-4 font-bold text-zinc-900">Ostatnie 30 dni</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-bold text-zinc-900">{label}</h2>
+          <div className="flex rounded-lg border border-zinc-200 p-0.5">
+            <button
+              onClick={() => setView('30d')}
+              className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
+                view === '30d' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              30 dni
+            </button>
+            <button
+              onClick={() => setView('12m')}
+              className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
+                view === '12m' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              12 mies.
+            </button>
+          </div>
+        </div>
         <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={dailyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+          <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+            <defs>
+              <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#71717a' }} tickLine={false} />
-            <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#71717a' }} tickLine={false} axisLine={false} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#71717a' }} tickLine={false} axisLine={false} unit=" zł" />
+            <YAxis tick={{ fontSize: 11, fill: '#71717a' }} tickLine={false} axisLine={false} unit=" zł" width={70} />
             <Tooltip
               contentStyle={{ borderRadius: '12px', border: '1px solid #e4e4e7', fontSize: '13px' }}
-              formatter={(value, name) => {
-                const v = Number(value ?? 0);
-                return name === 'przychód' ? [`${v.toFixed(2)} zł`, 'Przychód'] : [v, 'Zamówienia'];
-              }}
+              formatter={(value) => [`${Number(value ?? 0).toFixed(2)} zł`, 'Przychód']}
             />
-            <Legend wrapperStyle={{ fontSize: '13px' }} />
-            <Line yAxisId="left" type="monotone" dataKey="zamówienia" stroke="#f97316" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-            <Line yAxisId="right" type="monotone" dataKey="przychód" stroke="#1d4ed8" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-          </LineChart>
+            <Area
+              type="monotone"
+              dataKey="przychód"
+              stroke="#f97316"
+              strokeWidth={2}
+              fill="url(#revenueGradient)"
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Bar chart — top produkty */}
+      {/* Top produkty */}
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:col-span-2">
         <h2 className="mb-4 font-bold text-zinc-900">Najpopularniejsze produkty</h2>
         <ResponsiveContainer width="100%" height={280}>

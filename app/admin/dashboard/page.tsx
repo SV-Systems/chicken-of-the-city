@@ -49,9 +49,27 @@ async function getStats() {
     });
   const dailyData = Object.entries(dailyMap).map(([date, v]) => ({
     date: date.slice(5),
-    zamówienia: v.orders,
     przychód: Math.round(v.revenue * 100) / 100,
   }));
+
+  // Ostatnie 12 miesięcy
+  const monthlyMap: Record<string, number> = {};
+  const MONTHS_PL = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    const key = d.toISOString().slice(0, 7); // YYYY-MM
+    monthlyMap[key] = 0;
+  }
+  orders.forEach(o => {
+    const key = o.created_at.slice(0, 7);
+    if (key in monthlyMap) monthlyMap[key] += Number(o.amount_total);
+  });
+  const monthlyData = Object.entries(monthlyMap).map(([key, revenue]) => {
+    const [, month] = key.split('-');
+    return { date: MONTHS_PL[parseInt(month) - 1], przychód: Math.round(revenue * 100) / 100 };
+  });
 
   // Top 10 produktów
   const productMap: Record<string, { quantity: number; revenue: number }> = {};
@@ -65,7 +83,7 @@ async function getStats() {
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 10);
 
-  return { kpi: { totalOrders, totalRevenue, todayOrders, todayRevenue }, dailyData, topProducts };
+  return { kpi: { totalOrders, totalRevenue, todayOrders, todayRevenue }, dailyData, monthlyData, topProducts };
 }
 
 async function getOrders(query: string, page: number) {
@@ -108,7 +126,7 @@ export default async function DashboardPage({
   const { q = '', page: pageStr = '1' } = await searchParams;
   const page = Math.max(1, parseInt(pageStr) || 1);
 
-  const [{ kpi, dailyData, topProducts }, { orders, total }] = await Promise.all([
+  const [{ kpi, dailyData, monthlyData, topProducts }, { orders, total }] = await Promise.all([
     getStats(),
     getOrders(q, page),
   ]);
@@ -136,7 +154,7 @@ export default async function DashboardPage({
         </div>
 
         {/* Charts */}
-        <Charts dailyData={dailyData} topProducts={topProducts} />
+        <Charts dailyData={dailyData} monthlyData={monthlyData} topProducts={topProducts} />
 
         {/* Orders with server-side search + pagination */}
         <Suspense>
