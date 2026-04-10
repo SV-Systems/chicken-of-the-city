@@ -97,7 +97,7 @@ export default async function RootLayout({
             restaurantName={brand.restaurantName}
             restaurantTagline={brand.restaurantTagline}
           />
-          <CartDrawer />
+          <CartDrawer minimumOrderAmount={info.minimumOrderAmount} />
           <CartWidget />
         </CartProvider>
       </body>

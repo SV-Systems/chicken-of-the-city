@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
-import { getAllProducts } from '@/lib/datocms';
+import { getAllProducts, getRestaurantInfo } from '@/lib/datocms';
 
 interface CartItemInput {
   id: string;
@@ -38,8 +38,9 @@ export async function POST(request: NextRequest) {
 
   // --- Verify prices against DatoCMS (source of truth) ---
   let products;
+  let restaurantInfo;
   try {
-    products = await getAllProducts();
+    [products, restaurantInfo] = await Promise.all([getAllProducts(), getRestaurantInfo()]);
   } catch {
     return Response.json({ error: 'Błąd pobierania menu.' }, { status: 502 });
   }
@@ -68,6 +69,19 @@ export async function POST(request: NextRequest) {
       },
       quantity: item.quantity,
     });
+  }
+
+  // --- Validate minimum order amount ---
+  if (restaurantInfo.minimumOrderAmount != null) {
+    const total = lineItems.reduce((sum, li) => {
+      return sum + (li.price_data.unit_amount * li.quantity) / 100;
+    }, 0);
+    if (total < restaurantInfo.minimumOrderAmount) {
+      return Response.json(
+        { error: `Minimalna kwota zamówienia to ${restaurantInfo.minimumOrderAmount.toFixed(2)} zł.` },
+        { status: 400 }
+      );
+    }
   }
 
   // --- Build notes metadata ---

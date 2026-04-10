@@ -4,7 +4,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 
-export default function CartDrawer() {
+interface CartDrawerProps {
+  minimumOrderAmount?: number | null;
+}
+
+export default function CartDrawer({ minimumOrderAmount }: CartDrawerProps) {
   const { items, isOpen, totalItems, totalPrice, removeFromCart, setQuantity, setNote, clearCart, closeCart } =
     useCart();
   const [loading, setLoading] = useState(false);
@@ -45,6 +49,11 @@ export default function CartDrawer() {
   }
 
   const totalFormatted = totalPrice.toFixed(2).replace('.', ',');
+  const belowMinimum =
+    minimumOrderAmount != null && totalPrice < minimumOrderAmount && items.length > 0;
+  const missingAmount = belowMinimum
+    ? (minimumOrderAmount! - totalPrice).toFixed(2).replace('.', ',')
+    : null;
 
   return (
     <>
@@ -219,6 +228,16 @@ export default function CartDrawer() {
                 {totalFormatted} zł
               </span>
             </div>
+            {belowMinimum && (
+              <p className="mb-3 rounded-xl bg-amber-50 px-4 py-2 text-center text-sm text-amber-700">
+                Minimalna kwota zamówienia to{' '}
+                <span className="font-semibold">
+                  {minimumOrderAmount!.toFixed(2).replace('.', ',')} zł
+                </span>
+                . Brakuje jeszcze{' '}
+                <span className="font-semibold">{missingAmount} zł</span>.
+              </p>
+            )}
             {error && (
               <p className="mb-3 rounded-xl bg-red-50 px-4 py-2 text-center text-sm text-red-600">
                 {error}
@@ -226,7 +245,7 @@ export default function CartDrawer() {
             )}
             <button
               onClick={handleCheckout}
-              disabled={loading}
+              disabled={loading || !!belowMinimum}
               className="btn-brand w-full rounded-full py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'Przekierowuję...' : 'Przejdź do płatności'}

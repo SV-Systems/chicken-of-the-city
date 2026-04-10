@@ -38,6 +38,7 @@ export interface RestaurantInfo {
   address: string;
   email: string;
   openingHours: string;
+  minimumOrderAmount: number | null;
 }
 
 export interface SeoSettings {
@@ -117,6 +118,7 @@ export async function getRestaurantInfo(): Promise<RestaurantInfo> {
         address
         email
         openingHours
+        minimumOrderAmount
       }
     }
   `);
