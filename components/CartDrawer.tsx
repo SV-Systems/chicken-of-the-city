@@ -5,10 +5,24 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 
 export default function CartDrawer() {
-  const { items, isOpen, totalItems, totalPrice, removeFromCart, setQuantity, setNote, closeCart } =
+  const { items, isOpen, totalItems, totalPrice, removeFromCart, setQuantity, setNote, clearCart, closeCart } =
     useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
+
+  function toggleNote(id: string) {
+    setExpandedNotes((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
 
   async function handleCheckout() {
     setLoading(true);
@@ -168,14 +182,24 @@ export default function CartDrawer() {
                       </span>
                     </div>
 
-                    <textarea
-                      value={item.note ?? ''}
-                      onChange={(e) => setNote(item.id, e.target.value)}
-                      placeholder="Uwagi do pozycji (np. bez cebuli)"
-                      maxLength={300}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-700 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
-                    />
+                    {expandedNotes.has(item.id) ? (
+                      <textarea
+                        value={item.note ?? ''}
+                        onChange={(e) => setNote(item.id, e.target.value)}
+                        placeholder="Uwagi do pozycji (np. bez cebuli)"
+                        maxLength={300}
+                        rows={2}
+                        autoFocus
+                        className="w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-700 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => toggleNote(item.id)}
+                        className="self-start text-xs text-zinc-400 underline-offset-2 hover:text-zinc-600 hover:underline transition-colors"
+                      >
+                        + Dodaj uwagę
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}
@@ -207,6 +231,38 @@ export default function CartDrawer() {
             <p className="mt-2 text-center text-xs text-zinc-400">
               Bezpieczna płatność przez Stripe
             </p>
+
+            {confirmClear ? (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center">
+                <p className="mb-3 text-sm font-medium text-red-700">
+                  Na pewno chcesz opróżnić koszyk?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      clearCart();
+                      setConfirmClear(false);
+                    }}
+                    className="flex-1 rounded-full bg-red-500 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+                  >
+                    Tak, wyczyść
+                  </button>
+                  <button
+                    onClick={() => setConfirmClear(false)}
+                    className="flex-1 rounded-full border border-zinc-300 py-2 text-sm font-semibold text-zinc-600 transition-colors hover:bg-zinc-100"
+                  >
+                    Anuluj
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmClear(true)}
+                className="mt-3 w-full text-center text-xs text-zinc-400 underline-offset-2 hover:text-red-400 hover:underline transition-colors"
+              >
+                Opróżnij koszyk
+              </button>
+            )}
           </div>
         )}
       </aside>
