@@ -10,6 +10,7 @@ const categoryType = types.find(t => t.api_key === 'category');
 const productType = types.find(t => t.api_key === 'product');
 const restaurantInfoType = types.find(t => t.api_key === 'restaurant_info');
 const seoType = types.find(t => t.api_key === 'seo_setting');
+const brandType = types.find(t => t.api_key === 'brand_setting');
 
 console.log('Dodaję przykładowe dane...\n');
 
@@ -74,5 +75,20 @@ await client.items.create({
   meta_description: 'Zamów online najlepsze burgery, skrzydełka i dodatki. Szybka dostawa, płatność BLIK i kartą.',
 });
 console.log('SEO Settings OK');
+
+// --- Brand Settings ---
+const brandRecord = await client.items.create({
+  item_type: { type: 'item_type', id: brandType.id },
+  restaurant_name: 'Chicken',
+  restaurant_tagline: 'of the City',
+  hero_label: 'Zamów online',
+  hero_title: 'Najlepszy kurczak',
+  hero_highlight: 'w mieście.',
+  hero_subtitle: 'Świeże składniki, wyjątkowe smaki. Zamów teraz i odbierz gotowe danie.',
+  category_emoji: '🍗',
+  brand_color: '#f97316',
+});
+await client.items.publish(brandRecord.id);
+console.log('Brand Settings OK (opublikowany)');
 
 console.log('\nWszystkie dane dodane pomyslnie!');

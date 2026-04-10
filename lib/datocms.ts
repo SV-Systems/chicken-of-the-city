@@ -46,6 +46,17 @@ export interface SeoSettings {
   favicon: { url: string } | null;
 }
 
+export interface BrandSettings {
+  restaurantName: string;
+  restaurantTagline: string;
+  heroLabel: string;
+  heroTitle: string;
+  heroHighlight: string;
+  heroSubtitle: string;
+  categoryEmoji: string;
+  brandColor: string;
+}
+
 // --- Queries ---
 export async function getAllCategories(): Promise<Category[]> {
   const data = await fetchDatoCMS<{ allCategories: Category[] }>(`
@@ -122,4 +133,22 @@ export async function getSeoSettings(): Promise<SeoSettings> {
     }
   `);
   return data.seoSetting;
+}
+
+export async function getBrandSettings(): Promise<BrandSettings> {
+  const data = await fetchDatoCMS<{ brandSetting: BrandSettings }>(`
+    query {
+      brandSetting {
+        restaurantName
+        restaurantTagline
+        heroLabel
+        heroTitle
+        heroHighlight
+        heroSubtitle
+        categoryEmoji
+        brandColor
+      }
+    }
+  `);
+  return data.brandSetting;
 }

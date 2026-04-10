@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand color — overridden dynamically from DatoCMS via layout.tsx */
+  --brand: #f97316;
+  --brand-dark: color-mix(in srgb, var(--brand) 82%, black);
+  --brand-light: color-mix(in srgb, var(--brand) 72%, white);
+  --brand-deep: color-mix(in srgb, var(--brand) 18%, black);
+  --brand-subtle-bg: color-mix(in srgb, var(--brand) 12%, white);
+  --brand-subtle-text: color-mix(in srgb, var(--brand) 80%, #333);
 }
 
 @theme inline {
@@ -23,4 +31,22 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Brand color utility classes */
+.text-brand        { color: var(--brand); }
+.text-brand-light  { color: var(--brand-light); }
+.text-brand-subtle { color: var(--brand-subtle-text); }
+.bg-brand-subtle   { background-color: var(--brand-subtle-bg); }
+.border-brand-hover:hover { border-color: var(--brand-light); }
+
+.link-brand       { color: var(--brand); }
+.link-brand:hover { color: var(--brand-dark); }
+
+.btn-brand {
+  background-color: var(--brand);
+  transition: filter 0.15s ease;
+}
+.btn-brand:hover:not(:disabled) {
+  filter: brightness(0.88);
 }

@@ -5,6 +5,7 @@ import { getAllProducts } from '@/lib/datocms';
 interface CartItemInput {
   id: string;
   quantity: number;
+  note?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -28,6 +29,9 @@ export async function POST(request: NextRequest) {
       !Number.isInteger(item.quantity) ||
       item.quantity < 1
     ) {
+      return Response.json({ error: 'Nieprawidłowe dane koszyka.' }, { status: 400 });
+    }
+    if (item.note !== undefined && (typeof item.note !== 'string' || item.note.length > 300)) {
       return Response.json({ error: 'Nieprawidłowe dane koszyka.' }, { status: 400 });
     }
   }
@@ -66,6 +70,16 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  // --- Build notes metadata ---
+  const metadata: Record<string, string> = {};
+  items.forEach((item, index) => {
+    if (item.note && item.note.trim()) {
+      const product = productMap.get(item.id);
+      const label = product ? product.name : item.id;
+      metadata[`uwaga_${index + 1}`] = `${label}: ${item.note.trim()}`;
+    }
+  });
+
   // --- Create Stripe Checkout session ---
   const origin = request.headers.get('origin') ?? process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -78,6 +92,7 @@ export async function POST(request: NextRequest) {
       success_url: `${origin}/zamowienie/sukces?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/zamowienie/anulowano`,
       invoice_creation: { enabled: true },
+      ...(Object.keys(metadata).length > 0 && { metadata }),
     });
 
     return Response.json({ url: session.url });

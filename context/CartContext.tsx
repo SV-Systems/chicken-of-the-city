@@ -18,6 +18,7 @@ export interface CartItem {
   price: number;
   image: { url: string; alt: string } | null;
   quantity: number;
+  note?: string;
 }
 
 interface CartState {
@@ -29,6 +30,7 @@ type CartAction =
   | { type: 'ADD'; product: Product }
   | { type: 'REMOVE'; id: string }
   | { type: 'SET_QUANTITY'; id: string; quantity: number }
+  | { type: 'SET_NOTE'; id: string; note: string }
   | { type: 'CLEAR' }
   | { type: 'OPEN' }
   | { type: 'CLOSE' }
@@ -77,6 +79,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ),
       };
     }
+    case 'SET_NOTE':
+      return {
+        ...state,
+        items: state.items.map((i) =>
+          i.id === action.id ? { ...i, note: action.note } : i
+        ),
+      };
     case 'CLEAR':
       return { ...state, items: [] };
     case 'OPEN':
@@ -100,6 +109,7 @@ interface CartContextValue {
   addToCart: (product: Product) => void;
   removeFromCart: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
+  setNote: (id: string, note: string) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -147,6 +157,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToCart: (product) => dispatch({ type: 'ADD', product }),
         removeFromCart: (id) => dispatch({ type: 'REMOVE', id }),
         setQuantity: (id, quantity) => dispatch({ type: 'SET_QUANTITY', id, quantity }),
+        setNote: (id, note) => dispatch({ type: 'SET_NOTE', id, note }),
         clearCart: () => dispatch({ type: 'CLEAR' }),
         openCart: () => dispatch({ type: 'OPEN' }),
         closeCart: () => dispatch({ type: 'CLOSE' }),

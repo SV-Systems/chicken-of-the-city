@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getAllCategories, getAllProducts } from '@/lib/datocms';
+import { getAllCategories, getAllProducts, getBrandSettings } from '@/lib/datocms';
 import ProductCard from '@/components/ProductCard';
 
 export const revalidate = 60;
@@ -18,9 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default async function MenuPage() {
-  const [categories, products] = await Promise.all([
+  const [categories, products, brand] = await Promise.all([
     getAllCategories(),
     getAllProducts(),
+    getBrandSettings(),
   ]);
 
   const productsByCategory = categories.map((cat) => ({
@@ -50,7 +51,11 @@ export default async function MenuPage() {
               </h2>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {cat.products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    fallbackEmoji={brand.categoryEmoji}
+                  />
                 ))}
               </div>
             </section>
@@ -64,7 +69,11 @@ export default async function MenuPage() {
           </h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {uncategorized.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                fallbackEmoji={brand.categoryEmoji}
+              />
             ))}
           </div>
         </section>

@@ -1,16 +1,19 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getAllCategories, getAllProducts } from '@/lib/datocms';
+import { getAllCategories, getAllProducts, getBrandSettings } from '@/lib/datocms';
 import ProductCard from '@/components/ProductCard';
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
 export default async function HomePage() {
-  const [categories, products] = await Promise.all([
+  const [categories, products, brand] = await Promise.all([
     getAllCategories(),
     getAllProducts(),
+    getBrandSettings(),
   ]);
 
   const featuredProducts = products.slice(0, 3);
@@ -18,25 +21,30 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-950 py-24 text-white">
+      <section
+        className="py-24 text-white"
+        style={{
+          background:
+            'linear-gradient(to bottom right, #18181b, #27272a, var(--brand-deep))',
+        }}
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="max-w-2xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-orange-400">
-              Zamów online
+            <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-brand-light">
+              {brand.heroLabel}
             </p>
             <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl">
-              Najlepszy kurczak
+              {brand.heroTitle}
               <br />
-              <span className="text-orange-400">w mieście.</span>
+              <span className="text-brand-light">{brand.heroHighlight}</span>
             </h1>
             <p className="mt-6 text-lg text-zinc-400">
-              Świeże składniki, wyjątkowe smaki. Zamów teraz i odbierz
-              gotowe&nbsp;danie.
+              {brand.heroSubtitle}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/menu"
-                className="inline-flex items-center justify-center rounded-full bg-orange-500 px-8 py-3 text-base font-semibold transition-colors hover:bg-orange-600"
+                className="btn-brand inline-flex items-center justify-center rounded-full px-8 py-3 text-base font-semibold"
               >
                 Zobacz menu
               </Link>
@@ -63,9 +71,9 @@ export default async function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/menu#${cat.id}`}
-                  className="flex flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-sm transition-all hover:border-orange-300 hover:shadow-md"
+                  className="border-brand-hover flex flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-sm transition-all hover:shadow-md"
                 >
-                  <span className="text-3xl">🍗</span>
+                  <span className="text-3xl">{brand.categoryEmoji}</span>
                   <span className="mt-2 text-sm font-semibold text-zinc-800">
                     {cat.name}
                   </span>
@@ -86,14 +94,14 @@ export default async function HomePage() {
               </h2>
               <Link
                 href="/menu"
-                className="text-sm font-semibold text-orange-500 hover:text-orange-600"
+                className="link-brand text-sm font-semibold"
               >
                 Zobacz wszystkie &rarr;
               </Link>
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} fallbackEmoji={brand.categoryEmoji} />
               ))}
             </div>
           </div>

@@ -5,11 +5,23 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
 import { CartProvider } from '@/context/CartContext';
-import { getRestaurantInfo, getSeoSettings } from '@/lib/datocms';
+import { getRestaurantInfo, getSeoSettings, getBrandSettings } from '@/lib/datocms';
+import type { BrandSettings } from '@/lib/datocms';
 
 const geist = Geist({ subsets: ['latin'] });
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+const BRAND_FALLBACK: BrandSettings = {
+  restaurantName: 'Chicken',
+  restaurantTagline: 'of the City',
+  heroLabel: 'Zamów online',
+  heroTitle: 'Najlepszy kurczak',
+  heroHighlight: 'w mieście.',
+  heroSubtitle: 'Świeże składniki, wyjątkowe smaki. Zamów teraz i odbierz gotowe danie.',
+  categoryEmoji: '🍗',
+  brandColor: '#f97316',
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -57,15 +69,29 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const info = await getRestaurantInfo();
+  const [info, brand] = await Promise.all([
+    getRestaurantInfo(),
+    getBrandSettings().catch(() => BRAND_FALLBACK),
+  ]);
 
   return (
-    <html lang="pl" className={geist.className}>
+    <html
+      lang="pl"
+      className={geist.className}
+      style={{ '--brand': brand.brandColor } as React.CSSProperties}
+    >
       <body className="flex min-h-screen flex-col bg-zinc-50">
         <CartProvider>
-          <Header />
+          <Header
+            restaurantName={brand.restaurantName}
+            restaurantTagline={brand.restaurantTagline}
+          />
           <main className="flex-1">{children}</main>
-          <Footer info={info} />
+          <Footer
+            info={info}
+            restaurantName={brand.restaurantName}
+            restaurantTagline={brand.restaurantTagline}
+          />
           <CartDrawer />
         </CartProvider>
       </body>

@@ -6,9 +6,10 @@ import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   product: Product;
+  fallbackEmoji?: string;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, fallbackEmoji = '🍽️' }: ProductCardProps) {
   const { addToCart, openCart } = useCart();
   const priceFormatted = product.price.toFixed(2).replace('.', ',');
 
@@ -26,7 +27,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         ) : (
           <div className="flex h-full items-center justify-center text-5xl">
-            🍗
+            {fallbackEmoji}
           </div>
         )}
       </div>
@@ -52,7 +53,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </span>
           <button
             onClick={() => { addToCart(product); openCart(); }}
-            className="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600 active:scale-95"
+            className="btn-brand rounded-full px-4 py-2 text-sm font-semibold text-white active:scale-95"
           >
             Dodaj
           </button>

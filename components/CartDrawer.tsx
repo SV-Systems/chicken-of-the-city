@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 
 export default function CartDrawer() {
-  const { items, isOpen, totalItems, totalPrice, removeFromCart, setQuantity, closeCart } =
+  const { items, isOpen, totalItems, totalPrice, removeFromCart, setQuantity, setNote, closeCart } =
     useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +18,7 @@ export default function CartDrawer() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
+          items: items.map((i) => ({ id: i.id, quantity: i.quantity, note: i.note ?? '' })),
         }),
       });
       const data = await res.json();
@@ -55,7 +55,7 @@ export default function CartDrawer() {
           <h2 className="text-lg font-bold text-zinc-900">
             Koszyk
             {totalItems > 0 && (
-              <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-sm font-semibold text-orange-600">
+              <span className="ml-2 rounded-full bg-brand-subtle px-2 py-0.5 text-sm font-semibold text-brand-subtle">
                 {totalItems}
               </span>
             )}
@@ -115,7 +115,7 @@ export default function CartDrawer() {
                     )}
                   </div>
 
-                  <div className="flex flex-1 flex-col justify-between">
+                  <div className="flex flex-1 flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-semibold text-zinc-900 leading-tight">
                         {item.name}
@@ -167,6 +167,15 @@ export default function CartDrawer() {
                         zł
                       </span>
                     </div>
+
+                    <textarea
+                      value={item.note ?? ''}
+                      onChange={(e) => setNote(item.id, e.target.value)}
+                      placeholder="Uwagi do pozycji (np. bez cebuli)"
+                      maxLength={300}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-700 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                    />
                   </div>
                 </li>
               ))}
@@ -191,7 +200,7 @@ export default function CartDrawer() {
             <button
               onClick={handleCheckout}
               disabled={loading}
-              className="w-full rounded-full bg-orange-500 py-3 text-base font-semibold text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-brand w-full rounded-full py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'Przekierowuję...' : 'Przejdź do płatności'}
             </button>

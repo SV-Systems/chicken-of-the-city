@@ -161,6 +161,43 @@ async function setup() {
 
   console.log('SEO Settings OK\n');
 
+  // --- MODEL: Brand Settings (singleton) ---
+  console.log('Tworzę model: Brand Settings');
+  const brandSettings = await client.itemTypes.create({
+    name: 'Brand Settings',
+    api_key: 'brand_setting',
+    singleton: true,
+    all_locales_required: true,
+    draft_mode_active: false,
+  });
+
+  const brandFields = [
+    { label: 'Restaurant Name',    api_key: 'restaurant_name',    field_type: 'string', required: true },
+    { label: 'Restaurant Tagline', api_key: 'restaurant_tagline', field_type: 'string', required: false },
+    { label: 'Hero Label',         api_key: 'hero_label',         field_type: 'string', required: true },
+    { label: 'Hero Title',         api_key: 'hero_title',         field_type: 'string', required: true },
+    { label: 'Hero Highlight',     api_key: 'hero_highlight',     field_type: 'string', required: true },
+    { label: 'Hero Subtitle',      api_key: 'hero_subtitle',      field_type: 'text',   required: true },
+    { label: 'Category Emoji',     api_key: 'category_emoji',     field_type: 'string', required: true },
+    { label: 'Brand Color',        api_key: 'brand_color',        field_type: 'string', required: true },
+  ];
+
+  for (const f of brandFields) {
+    await client.fields.create(brandSettings.id, {
+      label: f.label,
+      field_type: f.field_type,
+      api_key: f.api_key,
+      validators: f.required ? { required: {} } : {},
+      appearance: {
+        editor: f.field_type === 'text' ? 'textarea' : 'single_line',
+        parameters: f.field_type === 'string' ? { heading: false } : {},
+        addons: [],
+      },
+    });
+  }
+
+  console.log('Brand Settings OK\n');
+
   console.log('Wszystkie modele utworzone pomyslnie!');
 }
 
