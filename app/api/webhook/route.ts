@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
       const amountTotal = ((session.amount_total ?? 0) / 100).toFixed(2);
       const stripeSessionId = session.id;
 
+      // Adres dostawy
+      const addr = session.shipping_details?.address;
+      const shippingAddress = addr
+        ? [addr.line1, addr.line2, `${addr.postal_code ?? ''} ${addr.city ?? ''}`.trim(), addr.country]
+            .filter(Boolean)
+            .join('\n')
+        : 'brak';
+
       // Krótki numer zamówienia oparty na czasie sesji, np. "260410-1423"
       const sessionDate = new Date((session.created ?? Date.now() / 1000) * 1000);
       const pad = (n: number) => n.toString().padStart(2, '0');
@@ -89,6 +97,7 @@ export async function POST(request: NextRequest) {
         orderId,
         items: itemsText,
         notes: notes || 'brak',
+        address: shippingAddress,
       };
 
       // Mail do właściciela
