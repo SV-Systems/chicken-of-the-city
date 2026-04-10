@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chicken of the City
 
-## Getting Started
+Aplikacja e-commerce dla restauracji oparta na architekturze **Serverless Headless**. Umożliwia przeglądanie menu, składanie zamówień i płatność online.
 
-First, run the development server:
+## Tech Stack
+
+- **Next.js** (App Router) — frontend i API routes
+- **Tailwind CSS** — stylizacja
+- **DatoCMS** — zarządzanie treścią (menu, ceny, godziny otwarcia)
+- **Stripe Checkout** — płatności (BLIK, karty, Apple/Google Pay)
+- **Vercel** — hosting i CI/CD
+
+## Środowisko lokalne
+
+Skopiuj zmienne środowiskowe:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uzupełnij `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DATOCMS_API_TOKEN=...
+DATOCMS_FULL_ACCESS_API_TOKEN=...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=...
+STRIPE_SECRET_KEY=...
+STRIPE_WEBHOOK_SECRET=...
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Zainstaluj zależności i uruchom serwer deweloperski:
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Aplikacja działa pod adresem [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Produkcja
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Aplikacja jest wdrożona na **Vercel** i dostępna pod docelową domeną projektu. Każdy push na gałąź `main` automatycznie triggeruje nowy deploy.
 
-## Deploy on Vercel
+Zmiana treści w DatoCMS (publikacja rekordu) wysyła webhook do Vercel, który przebudowuje stronę z nowymi danymi.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Skrypty pomocnicze
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Jednorazowe zasiewanie danych w DatoCMS (tylko przy pierwszym setupie)
+node scripts/seed-datocms.mjs
+
+# Konfiguracja modeli w DatoCMS
+node scripts/setup-datocms.mjs
+```
+
+> **Uwaga:** Nie uruchamiaj `seed-datocms.mjs` ponownie — skrypt nie sprawdza duplikatów i stworzy zdublowane rekordy.
