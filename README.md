@@ -48,6 +48,16 @@ Zmiana treści w DatoCMS (publikacja rekordu) wysyła webhook do Vercel, który 
 
 Szczegółowy przewodnik dla właściciela restauracji (produkty, ceny, godziny, branding) znajduje się w [MAINTENANCE.md](./MAINTENANCE.md).
 
+## Funkcje konfigurowane w DatoCMS
+
+### Minimalna kwota zamówienia
+
+W DatoCMS → **Restaurant Info** → pole **Minimum Order Amount** (float, opcjonalne):
+
+- **Puste / null** — brak limitu, koszyk działa normalnie
+- **Np. `30`** — koszyk zablokuje checkout i pokaże komunikat "Brakuje X zł" dopóki suma nie osiągnie 30 zł
+- Walidacja działa zarówno po stronie klienta (przycisk wyłączony) jak i serwera (API odrzuci żądanie)
+
 ## Skrypty pomocnicze
 
 ### Główny skrypt inicjalizacyjny (zalecany)
