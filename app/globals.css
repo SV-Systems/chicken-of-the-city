@@ -15,9 +15,6 @@
   /* Secondary color — overridden dynamically from DatoCMS via layout.tsx */
   --secondary: #1d4ed8;
   --secondary-dark: color-mix(in srgb, var(--secondary) 82%, black);
-  --secondary-light: color-mix(in srgb, var(--secondary) 70%, white);
-  --secondary-deep: color-mix(in srgb, var(--secondary) 18%, black);
-  --secondary-subtle-bg: color-mix(in srgb, var(--secondary) 10%, white);
 }
 
 @theme inline {
@@ -33,48 +30,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ── Primary brand utilities ─────────────────────────────── */
+/* Primary brand — text/bg accents */
 .text-brand        { color: var(--brand); }
 .text-brand-light  { color: var(--brand-light); }
 .text-brand-subtle { color: var(--brand-subtle-text); }
 .bg-brand-subtle   { background-color: var(--brand-subtle-bg); }
-.border-brand-hover:hover { border-color: var(--brand); }
+.border-brand-hover:hover { border-color: var(--brand-light); }
 
 .link-brand       { color: var(--brand); }
 .link-brand:hover { color: var(--brand-dark); }
 
+/* Buttons use secondary color */
 .btn-brand {
-  background-color: var(--brand);
+  background-color: var(--secondary);
   transition: filter 0.15s ease;
 }
 .btn-brand:hover:not(:disabled) {
   filter: brightness(0.88);
-}
-
-/* ── Secondary color utilities ───────────────────────────── */
-.text-secondary        { color: var(--secondary); }
-.text-secondary-light  { color: var(--secondary-light); }
-.bg-secondary-subtle   { background-color: var(--secondary-subtle-bg); }
-
-.btn-secondary {
-  background-color: var(--secondary);
-  transition: filter 0.15s ease;
-}
-.btn-secondary:hover:not(:disabled) {
-  filter: brightness(0.88);
-}
-
-/* ── Hero gradient ───────────────────────────────────────── */
-.hero-gradient {
-  background: linear-gradient(
-    135deg,
-    #111113 0%,
-    color-mix(in srgb, var(--brand-deep) 60%, #111113) 50%,
-    color-mix(in srgb, var(--secondary-deep) 50%, #111113) 100%
-  );
-}
-
-/* ── Card accent bar ─────────────────────────────────────── */
-.card-brand-bar {
-  background: linear-gradient(90deg, var(--brand), var(--secondary));
 }
