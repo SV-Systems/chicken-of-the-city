@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import CartButton from './CartButton';
 
 interface HeaderProps {
@@ -10,15 +11,15 @@ export default function Header({ restaurantName, restaurantTagline }: HeaderProp
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl font-black tracking-tight text-zinc-900">
-            {restaurantName}<span className="text-brand">.</span>
-          </span>
-          {restaurantTagline && (
-            <span className="hidden text-sm font-medium text-zinc-500 sm:block">
-              {restaurantTagline}
-            </span>
-          )}
+        <Link href="/">
+          <Image
+            src="/logo.jpg"
+            alt={restaurantName}
+            width={140}
+            height={48}
+            className="h-12 w-auto object-contain"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
