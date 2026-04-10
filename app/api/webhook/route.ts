@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { Resend } from 'resend';
 import { getEmailSettings, getRestaurantInfo } from '@/lib/datocms';
+import { supabase } from '@/lib/supabase';
 
 function fillTemplate(template: string, vars: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`);
@@ -34,8 +35,8 @@ export async function POST(request: NextRequest) {
       const amountTotal = ((session.amount_total ?? 0) / 100).toFixed(2);
       const stripeSessionId = session.id;
 
-      // Adres dostawy
-      const addr = session.shipping_details?.address;
+      // Adres dostawy (Stripe v22: shipping_details przeniesione do collected_information)
+      const addr = session.collected_information?.shipping_details?.address;
       const shippingAddress = addr
         ? [addr.line1, addr.line2, `${addr.postal_code ?? ''} ${addr.city ?? ''}`.trim(), addr.country]
             .filter(Boolean)
@@ -70,6 +71,45 @@ export async function POST(request: NextRequest) {
           `  Klient: ${customerName} <${customerEmail}>\n` +
           `  Kwota: ${amountTotal} PLN`
       );
+
+      // Zapisz zamówienie do Supabase
+      try {
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            order_number: orderId,
+            stripe_session_id: stripeSessionId,
+            customer_name: customerName,
+            customer_email: customerEmail,
+            amount_total: parseFloat(amountTotal),
+            shipping_address: shippingAddress,
+            notes: notes || null,
+            status: 'completed',
+          })
+          .select('id')
+          .single();
+
+        if (orderError) {
+          console.error('[webhook] Błąd zapisu zamówienia do Supabase:', orderError);
+        } else {
+          // Pobierz line items ze Stripe i zapisz pozycje zamówienia
+          const lineItems = await stripe.checkout.sessions.listLineItems(stripeSessionId, { limit: 100 });
+          const items = lineItems.data.map(li => ({
+            order_id: order.id,
+            product_name: li.description ?? '',
+            quantity: li.quantity ?? 1,
+            unit_price: (li.amount_total ?? 0) / 100 / (li.quantity ?? 1),
+          }));
+          const { error: itemsError } = await supabase.from('order_items').insert(items);
+          if (itemsError) {
+            console.error('[webhook] Błąd zapisu pozycji zamówienia do Supabase:', itemsError);
+          } else {
+            console.log(`[webhook] Zamówienie #${orderId} zapisane do Supabase (${items.length} pozycji)`);
+          }
+        }
+      } catch (err) {
+        console.error('[webhook] Nieoczekiwany błąd Supabase:', err);
+      }
 
       // Wyślij maile tylko gdy klucz Resend jest skonfigurowany
       if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) {
