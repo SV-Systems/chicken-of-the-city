@@ -10,7 +10,9 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, fallbackEmoji = '🍽️' }: ProductCardProps) {
-  const { addToCart } = useCart();
+  const { items, addToCart, setQuantity } = useCart();
+  const cartItem = items.find((i) => i.id === product.id);
+  const qty = cartItem?.quantity ?? 0;
   const priceFormatted = product.price.toFixed(2).replace('.', ',');
 
   return (
@@ -51,12 +53,35 @@ export default function ProductCard({ product, fallbackEmoji = '🍽️' }: Prod
           <span className="text-lg font-bold text-zinc-900">
             {priceFormatted} zł
           </span>
-          <button
-            onClick={() => addToCart(product)}
-            className="btn-brand rounded-full px-4 py-2 text-sm font-semibold text-white active:scale-95"
-          >
-            Dodaj
-          </button>
+
+          {qty === 0 ? (
+            <button
+              onClick={() => addToCart(product)}
+              className="btn-brand rounded-full px-4 py-2 text-sm font-semibold text-white active:scale-95"
+            >
+              Dodaj
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setQuantity(product.id, qty - 1)}
+                aria-label="Zmniejsz ilość"
+                className="btn-brand flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white active:scale-95"
+              >
+                −
+              </button>
+              <span className="w-6 text-center text-sm font-bold text-zinc-900">
+                {qty}
+              </span>
+              <button
+                onClick={() => addToCart(product)}
+                aria-label="Zwiększ ilość"
+                className="btn-brand flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white active:scale-95"
+              >
+                +
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

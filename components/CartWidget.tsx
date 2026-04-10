@@ -1,9 +1,21 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 
 export default function CartWidget() {
   const { totalItems, totalPrice, openCart } = useCart();
+  const [bumping, setBumping] = useState(false);
+  const prevItems = useRef(totalItems);
+
+  useEffect(() => {
+    if (totalItems > prevItems.current) {
+      setBumping(true);
+      const t = setTimeout(() => setBumping(false), 450);
+      return () => clearTimeout(t);
+    }
+    prevItems.current = totalItems;
+  }, [totalItems]);
 
   if (totalItems === 0) return null;
 
@@ -13,7 +25,7 @@ export default function CartWidget() {
     <button
       onClick={openCart}
       aria-label={`Koszyk (${totalItems} produktów)`}
-      className="btn-brand fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-xl transition-transform hover:scale-105 active:scale-95"
+      className={`btn-brand fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-xl hover:scale-105 active:scale-95 ${bumping ? 'cart-bump' : 'transition-transform'}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

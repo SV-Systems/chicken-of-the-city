@@ -40,6 +40,17 @@ body {
 .link-brand       { color: var(--brand); }
 .link-brand:hover { color: var(--brand-dark); }
 
+/* Cart widget bump animation */
+@keyframes cart-bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.cart-bump {
+  animation: cart-bump 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
 /* Buttons use secondary color */
 .btn-brand {
   background-color: var(--secondary);
