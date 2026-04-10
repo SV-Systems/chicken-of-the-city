@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import Link from 'next/link';
 import Charts from './Charts';
 import LogoutButton from './LogoutButton';
+import OrdersTable from './OrdersTable';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +68,7 @@ async function getData() {
     kpi: { totalOrders, totalRevenue, todayOrders, todayRevenue },
     dailyData,
     topProducts,
-    recentOrders: orders.slice(0, 25),
+    recentOrders: orders.slice(0, 100),
   };
 }
 
@@ -113,61 +113,8 @@ export default async function DashboardPage() {
         {/* Charts */}
         <Charts dailyData={dailyData} topProducts={topProducts} />
 
-        {/* Recent orders */}
-        <div className="mt-8 rounded-2xl border border-zinc-200 bg-white shadow-sm">
-          <div className="border-b border-zinc-200 px-6 py-4">
-            <h2 className="font-bold text-zinc-900">Ostatnie zamówienia</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-100 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  <th className="px-6 py-3">Nr</th>
-                  <th className="px-6 py-3">Data</th>
-                  <th className="px-6 py-3">Klient</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Kwota</th>
-                  <th className="px-6 py-3">Adres</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-zinc-400">
-                      Brak zamówień
-                    </td>
-                  </tr>
-                )}
-                {recentOrders.map((order, i) => (
-                  <tr
-                    key={order.id}
-                    className={`border-b border-zinc-100 transition hover:bg-orange-50 ${i % 2 === 0 ? '' : 'bg-zinc-50/50'}`}
-                  >
-                    <td className="px-6 py-3">
-                      <Link href={`/admin/dashboard/orders/${order.id}`} className="font-mono font-semibold text-orange-500 hover:underline">
-                        #{order.order_number}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-3 text-zinc-500">
-                      {new Date(order.created_at).toLocaleString('pl-PL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                    <td className="px-6 py-3 text-zinc-900">{order.customer_name || '—'}</td>
-                    <td className="px-6 py-3 text-zinc-500">{order.customer_email || '—'}</td>
-                    <td className="px-6 py-3 font-semibold text-zinc-900">{fmt(Number(order.amount_total))}</td>
-                    <td className="max-w-[200px] truncate px-6 py-3 text-zinc-500">
-                      {order.shipping_address?.replace(/\n/g, ', ') || '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {/* Recent orders with search */}
+        <OrdersTable orders={recentOrders} />
       </div>
     </div>
   );
