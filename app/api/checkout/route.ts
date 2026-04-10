@@ -94,6 +94,15 @@ export async function POST(request: NextRequest) {
     }
   });
 
+  // --- Stripe minimum amount check (2 PLN = 200 groszy) ---
+  const totalGrosze = lineItems.reduce((sum, li) => sum + li.price_data.unit_amount * li.quantity, 0);
+  if (totalGrosze < 200) {
+    return Response.json(
+      { error: 'Minimalna kwota zamówienia to 2,00 zł.' },
+      { status: 400 }
+    );
+  }
+
   // --- Create Stripe Checkout session ---
   const origin = request.headers.get('origin') ?? process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -113,6 +122,9 @@ export async function POST(request: NextRequest) {
     return Response.json({ url: session.url });
   } catch (err) {
     console.error('[checkout] Stripe error:', err);
+    if (err instanceof Stripe.errors.StripeInvalidRequestError && err.code === 'amount_too_small') {
+      return Response.json({ error: 'Kwota zamówienia jest zbyt niska. Minimalna kwota to 2,00 zł.' }, { status: 400 });
+    }
     return Response.json({ error: 'Błąd inicjalizacji płatności.' }, { status: 500 });
   }
 }
