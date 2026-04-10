@@ -44,6 +44,10 @@ Aplikacja jest wdrożona na **Vercel** i dostępna pod docelową domeną projekt
 
 Zmiana treści w DatoCMS (publikacja rekordu) wysyła webhook do Vercel, który przebudowuje stronę z nowymi danymi.
 
+## Zarządzanie treścią
+
+Szczegółowy przewodnik dla właściciela restauracji (produkty, ceny, godziny, branding) znajduje się w [MAINTENANCE.md](./MAINTENANCE.md).
+
 ## Skrypty pomocnicze
 
 ```bash
@@ -91,31 +95,28 @@ STRIPE_WEBHOOK_SECRET=          # nowy secret z webhooka Vercel → Stripe
 NEXT_PUBLIC_BASE_URL=           # docelowa domena klienta
 ```
 
-### Krok 3 — Edycja kodu (hardcoded elementy)
+### Krok 3 — Wypełnij Brand Settings w DatoCMS
 
-Miejsca wymagające zmiany na nazwę/branding nowego klienta:
+Po uruchomieniu skryptów wejdź w DatoCMS → **Brand Settings** i uzupełnij:
 
-| Plik | Linia | Co zmienić |
-|------|-------|------------|
-| `components/Header.tsx` | 9–15 | Nazwa restauracji w nagłówku |
-| `components/Footer.tsx` | 14–16 | Nazwa restauracji w stopce |
-| `components/Footer.tsx` | 53 | Nazwa w copyright |
-| `app/layout.tsx` | 42–49 | Fallback metadata (tytuł, opis) |
-| `app/page.tsx` | 28–31 | Teksty sekcji hero |
-| `app/page.tsx` | 69 | Emoji przy kategoriach (🍗 → dopasuj do kuchni) |
-| `app/globals.css` | — | Kolory brandowe (domyślnie orange) |
+| Pole | Opis | Przykład |
+|------|------|---------|
+| Restaurant Name | Główna część nazwy (bold) | `Pizza Roma` |
+| Restaurant Tagline | Podtytuł (opcjonalny) | `Warszawa Śródmieście` |
+| Hero Label | Mały tekst nad tytułem | `Zamów online` |
+| Hero Title | Pierwsza linia tytułu | `Najlepsza pizza` |
+| Hero Highlight | Druga linia (w kolorze marki) | `w mieście.` |
+| Hero Subtitle | Opis pod tytułem | `Świeże składniki...` |
+| Category Emoji | Emoji przy kategoriach | `🍕` |
+| Brand Color | Kolor marki (hex) | `#dc2626` |
 
-Aby zmienić kolor wiodący z pomarańczowego na inny, zamień `orange-500` / `orange-400` / `orange-600` na wybrany kolor Tailwind (np. `red-600`, `emerald-500`) we wszystkich komponentach.
+Kliknij **Publish** — żadna edycja kodu nie jest potrzebna.
 
 ### Co zależy od rodzaju restauracji
 
 | Rodzaj restauracji | Co się zmienia |
 |--------------------|----------------|
 | Pizza, burgery, sushi... | Tylko treść w DatoCMS (produkty, kategorie, zdjęcia) |
-| Inny kolor wiodący | Zamiana `orange-*` w komponentach i `globals.css` |
-| Inna waluta niż PLN | `app/api/checkout/route.ts:59` — zmiana `'pln'` |
+| Inny kolor wiodący | Pole **Brand Color** w DatoCMS (np. `#dc2626` dla czerwonego) |
+| Inna waluta niż PLN | `app/api/checkout/route.ts` — zmiana `'pln'` (jedyna edycja kodu) |
 | Logo zamiast tekstu | Podmiana `<span>` w `Header.tsx` na `<Image>` |
-
-### Opcja white-label (przy 3+ klientach)
-
-Warto rozważyć przeniesienie hardcoded tekstów (nazwa, slogan, kolory) do modelu "Ustawienia Globalne" w DatoCMS. Wtedy kod staje się w 100% white-label — zero edycji kodu przy każdym nowym kliencie.

@@ -40,6 +40,16 @@ Kolejność w menu odpowiada polu **Order** (1 = pierwsza kategoria).
 2. Edytuj pola
 3. **Publish**
 
+### Zmiana nazwy, koloru marki lub tekstów na stronie głównej
+
+1. **Content → Brand Settings**
+2. Edytuj wybrane pole:
+   - **Restaurant Name** — nazwa wyświetlana w nagłówku i stopce
+   - **Brand Color** — kolor przycisków i akcentów (format hex, np. `#f97316`)
+   - **Hero Title / Hero Highlight** — tytuł na stronie głównej
+   - **Category Emoji** — emoji przy kategoriach i produktach bez zdjęcia
+3. **Publish**
+
 ### Przywracanie poprzedniej wersji rekordu
 
 Przy edycji każdego rekordu po prawej stronie jest zakładka **Versions** — można cofnąć do dowolnej poprzedniej wersji.
