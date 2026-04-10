@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       // (BLIK, karty, Apple Pay, Google Pay — włącz w Stripe Dashboard > Settings)
       success_url: `${origin}/zamowienie/sukces?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/zamowienie/anulowano`,
+      shipping_address_collection: { allowed_countries: ['PL'] },
       invoice_creation: { enabled: true },
       ...(Object.keys(metadata).length > 0 && { metadata }),
     });
