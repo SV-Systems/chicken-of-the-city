@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 import Charts from './Charts';
 import LogoutButton from './LogoutButton';
 
@@ -140,10 +141,12 @@ export default async function DashboardPage() {
                 {recentOrders.map((order, i) => (
                   <tr
                     key={order.id}
-                    className={`border-b border-zinc-100 ${i % 2 === 0 ? '' : 'bg-zinc-50/50'}`}
+                    className={`border-b border-zinc-100 transition hover:bg-orange-50 ${i % 2 === 0 ? '' : 'bg-zinc-50/50'}`}
                   >
-                    <td className="px-6 py-3 font-mono font-semibold text-zinc-700">
-                      #{order.order_number}
+                    <td className="px-6 py-3">
+                      <Link href={`/admin/dashboard/orders/${order.id}`} className="font-mono font-semibold text-orange-500 hover:underline">
+                        #{order.order_number}
+                      </Link>
                     </td>
                     <td className="px-6 py-3 text-zinc-500">
                       {new Date(order.created_at).toLocaleString('pl-PL', {
