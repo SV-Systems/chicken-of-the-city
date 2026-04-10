@@ -50,15 +50,35 @@ Szczegółowy przewodnik dla właściciela restauracji (produkty, ceny, godziny,
 
 ## Skrypty pomocnicze
 
-```bash
-# Jednorazowe zasiewanie danych w DatoCMS (tylko przy pierwszym setupie)
-node scripts/seed-datocms.mjs
+### Główny skrypt inicjalizacyjny (zalecany)
 
-# Konfiguracja modeli w DatoCMS
-node scripts/setup-datocms.mjs
+```bash
+# Uruchom z katalogu chicken-of-the-city/
+node ../setup-datocms-full.mjs
 ```
 
-> **Uwaga:** Nie uruchamiaj `seed-datocms.mjs` ponownie — skrypt nie sprawdza duplikatów i stworzy zdublowane rekordy.
+Skrypt `setup-datocms-full.mjs` (w katalogu głównym projektu) wykonuje jednorazowo **pełny setup DatoCMS**:
+
+- Tworzy wszystkie modele i pola (Category, Product, Restaurant Info, SEO Settings, Brand Settings, Email Settings)
+- Dodaje 3 przykładowe produkty i 2 kategorie jako punkt startowy
+- **Bezpieczny do ponownego uruchomienia** — pomija modele i pola, które już istnieją
+
+Po uruchomieniu skryptu wejdź w DatoCMS i dostosuj:
+- **Brand Settings** — nazwa restauracji, kolory, teksty hero
+- **Restaurant Info** — dane kontaktowe, godziny otwarcia, minimalna kwota zamówienia (opcjonalne)
+- **Email Settings** — treści maili do właściciela i klienta
+- Produkty i kategorie — zastąp przykładowe danymi restauracji
+
+### Starsze skrypty migracyjne (legacy)
+
+```bash
+# Tylko jeśli setup-datocms-full.mjs nie pokrywa Twoich potrzeb:
+node scripts/setup-datocms.mjs       # stary setup (bez email/brand)
+node scripts/seed-datocms.mjs        # przykładowe dane (uwaga: nie sprawdza duplikatów)
+node scripts/add-brand-settings.mjs  # jednorazowa migracja brand settings
+node scripts/add-secondary-color.mjs # jednorazowa migracja secondary color
+node scripts/setup-email-settings.mjs # jednorazowa migracja email settings
+```
 
 ## Wdrożenie dla nowego klienta
 
