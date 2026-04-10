@@ -106,6 +106,7 @@ interface CartContextValue {
   isOpen: boolean;
   totalItems: number;
   totalPrice: number;
+  hydrated: boolean;
   addToCart: (product: Product) => void;
   removeFromCart: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
@@ -154,6 +155,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isOpen: state.isOpen,
         totalItems,
         totalPrice,
+        hydrated,
         addToCart: (product) => dispatch({ type: 'ADD', product }),
         removeFromCart: (id) => dispatch({ type: 'REMOVE', id }),
         setQuantity: (id, quantity) => dispatch({ type: 'SET_QUANTITY', id, quantity }),
