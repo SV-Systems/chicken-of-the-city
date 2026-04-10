@@ -1,13 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import Charts from './Charts';
 import LogoutButton from './LogoutButton';
-import OrdersTable from './OrdersTable';
 import CustomerSection from './CustomerSection';
-import { Suspense } from 'react';
+import DashboardTabs from './DashboardTabs';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 20;
 
 function getWarsawHour(dateStr: string): number {
   const h = parseInt(
@@ -199,20 +196,6 @@ async function getStats() {
   };
 }
 
-async function getOrders(query: string, page: number) {
-  const offset = (page - 1) * PAGE_SIZE;
-  let q = supabase
-    .from('orders')
-    .select('id, order_number, amount_total, created_at, customer_name, customer_email, shipping_address, status', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + PAGE_SIZE - 1);
-  if (query) {
-    q = q.or(`order_number.ilike.%${query}%,customer_name.ilike.%${query}%,customer_email.ilike.%${query}%`);
-  }
-  const { data, count } = await q;
-  return { orders: data ?? [], total: count ?? 0 };
-}
-
 function fmt(amount: number) {
   return amount.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł';
 }
@@ -231,18 +214,8 @@ function KpiCard({ label, value, trend }: { label: string; value: string; trend?
   );
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; page?: string }>;
-}) {
-  const { q = '', page: pageStr = '1' } = await searchParams;
-  const page = Math.max(1, parseInt(pageStr) || 1);
-
-  const [stats, { orders, total }] = await Promise.all([
-    getStats(),
-    getOrders(q, page),
-  ]);
+export default async function DashboardPage() {
+  const stats = await getStats();
 
   const { kpi, dailyData, monthlyData, topProducts, peakHours, peakDays, customerStats, topCustomers, popularBundles } = stats;
 
@@ -257,6 +230,8 @@ export default async function DashboardPage({
           <LogoutButton />
         </div>
       </div>
+
+      <DashboardTabs />
 
       <div className="mx-auto max-w-7xl px-6 py-8">
         {/* KPI */}
@@ -295,10 +270,6 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Zamówienia */}
-        <Suspense>
-          <OrdersTable orders={orders} total={total} page={page} query={q} />
-        </Suspense>
       </div>
     </div>
   );
