@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       // Krótki numer zamówienia oparty na czasie sesji, np. "260410-1423"
       const sessionDate = new Date((session.created ?? Date.now() / 1000) * 1000);
       const pad = (n: number) => n.toString().padStart(2, '0');
-      const orderId = `${sessionDate.getFullYear().toString().slice(2)}${pad(sessionDate.getMonth() + 1)}${pad(sessionDate.getDate())}-${pad(sessionDate.getHours())}${pad(sessionDate.getMinutes())}`;
+      const orderId = `${sessionDate.getFullYear().toString().slice(2)}${pad(sessionDate.getMonth() + 1)}${pad(sessionDate.getDate())}-${pad(sessionDate.getHours())}${pad(sessionDate.getMinutes())}${pad(sessionDate.getSeconds())}`;
 
       // Zbierz uwagi z metadata sesji (format: uwaga_1 = "Produkt: treść")
       const notes = Object.entries(session.metadata ?? {})
