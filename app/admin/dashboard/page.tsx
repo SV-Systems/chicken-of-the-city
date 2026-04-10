@@ -2,15 +2,17 @@ import { supabase } from '@/lib/supabase';
 import Charts from './Charts';
 import LogoutButton from './LogoutButton';
 import OrdersTable from './OrdersTable';
+import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
 
-async function getData() {
+const PAGE_SIZE = 20;
+
+async function getStats() {
   const [ordersRes, itemsRes] = await Promise.all([
     supabase
       .from('orders')
-      .select('id, order_number, amount_total, created_at, customer_name, customer_email, shipping_address, status')
-      .order('created_at', { ascending: false }),
+      .select('amount_total, created_at'),
     supabase
       .from('order_items')
       .select('product_name, quantity, unit_price'),
@@ -18,7 +20,6 @@ async function getData() {
 
   const orders = ordersRes.data ?? [];
   const items = itemsRes.data ?? [];
-
   const today = new Date().toISOString().slice(0, 10);
 
   const totalOrders = orders.length;
@@ -28,7 +29,7 @@ async function getData() {
     .filter(o => o.created_at.slice(0, 10) === today)
     .reduce((s, o) => s + Number(o.amount_total), 0);
 
-  // Zamówienia i przychód ostatnie 30 dni
+  // Ostatnie 30 dni
   const last30 = new Date();
   last30.setDate(last30.getDate() - 29);
   const dailyMap: Record<string, { orders: number; revenue: number }> = {};
@@ -47,7 +48,7 @@ async function getData() {
       }
     });
   const dailyData = Object.entries(dailyMap).map(([date, v]) => ({
-    date: date.slice(5), // MM-DD
+    date: date.slice(5),
     zamówienia: v.orders,
     przychód: Math.round(v.revenue * 100) / 100,
   }));
@@ -64,12 +65,26 @@ async function getData() {
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 10);
 
-  return {
-    kpi: { totalOrders, totalRevenue, todayOrders, todayRevenue },
-    dailyData,
-    topProducts,
-    recentOrders: orders.slice(0, 100),
-  };
+  return { kpi: { totalOrders, totalRevenue, todayOrders, todayRevenue }, dailyData, topProducts };
+}
+
+async function getOrders(query: string, page: number) {
+  const offset = (page - 1) * PAGE_SIZE;
+
+  let q = supabase
+    .from('orders')
+    .select('id, order_number, amount_total, created_at, customer_name, customer_email, shipping_address, status', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(offset, offset + PAGE_SIZE - 1);
+
+  if (query) {
+    q = q.or(
+      `order_number.ilike.%${query}%,customer_name.ilike.%${query}%,customer_email.ilike.%${query}%`
+    );
+  }
+
+  const { data, count } = await q;
+  return { orders: data ?? [], total: count ?? 0 };
 }
 
 function fmt(amount: number) {
@@ -85,8 +100,18 @@ function KpiCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function DashboardPage() {
-  const { kpi, dailyData, topProducts, recentOrders } = await getData();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { q = '', page: pageStr = '1' } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr) || 1);
+
+  const [{ kpi, dailyData, topProducts }, { orders, total }] = await Promise.all([
+    getStats(),
+    getOrders(q, page),
+  ]);
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -94,7 +119,7 @@ export default async function DashboardPage() {
       <div className="border-b border-zinc-200 bg-white px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div>
-            <h1 className="text-xl font-black text-zinc-900">Panel admina</h1>
+            <h1 className="text-xl font-black text-zinc-900">Panel właściciela</h1>
             <p className="text-sm text-zinc-400">Statystyki i zamówienia</p>
           </div>
           <LogoutButton />
@@ -113,8 +138,10 @@ export default async function DashboardPage() {
         {/* Charts */}
         <Charts dailyData={dailyData} topProducts={topProducts} />
 
-        {/* Recent orders with search */}
-        <OrdersTable orders={recentOrders} />
+        {/* Orders with server-side search + pagination */}
+        <Suspense>
+          <OrdersTable orders={orders} total={total} page={page} query={q} />
+        </Suspense>
       </div>
     </div>
   );
