@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import CartClearer from './CartClearer';
 
 export default function SukcesPage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
+      <CartClearer />
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
         <svg
           xmlns="http://www.w3.org/2000/svg"
