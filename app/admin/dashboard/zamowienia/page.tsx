@@ -8,7 +8,15 @@ export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 20;
 
-async function getOrders(query: string, page: number) {
+async function getOrders(
+  query: string,
+  page: number,
+  status: string,
+  amountMin: string,
+  amountMax: string,
+  dateFrom: string,
+  dateTo: string,
+) {
   const offset = (page - 1) * PAGE_SIZE;
   let q = supabase
     .from('orders')
@@ -16,7 +24,22 @@ async function getOrders(query: string, page: number) {
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
   if (query) {
-    q = q.or(`order_number.ilike.%${query}%,customer_name.ilike.%${query}%,customer_email.ilike.%${query}%`);
+    q = q.or(`order_number.ilike.%${query}%,customer_name.ilike.%${query}%,customer_email.ilike.%${query}%,shipping_address.ilike.%${query}%`);
+  }
+  if (status) {
+    q = q.eq('status', status);
+  }
+  if (amountMin) {
+    q = q.gte('amount_total', parseFloat(amountMin));
+  }
+  if (amountMax) {
+    q = q.lte('amount_total', parseFloat(amountMax));
+  }
+  if (dateFrom) {
+    q = q.gte('created_at', dateFrom);
+  }
+  if (dateTo) {
+    q = q.lte('created_at', `${dateTo}T23:59:59.999Z`);
   }
   const { data, count } = await q;
   return { orders: data ?? [], total: count ?? 0 };
@@ -25,12 +48,12 @@ async function getOrders(query: string, page: number) {
 export default async function ZamowieniaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; status?: string; amountMin?: string; amountMax?: string; dateFrom?: string; dateTo?: string }>;
 }) {
-  const { q = '', page: pageStr = '1' } = await searchParams;
+  const { q = '', page: pageStr = '1', status = '', amountMin = '', amountMax = '', dateFrom = '', dateTo = '' } = await searchParams;
   const page = Math.max(1, parseInt(pageStr) || 1);
 
-  const { orders, total } = await getOrders(q, page);
+  const { orders, total } = await getOrders(q, page, status, amountMin, amountMax, dateFrom, dateTo);
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -48,7 +71,7 @@ export default async function ZamowieniaPage({
 
       <div className="mx-auto max-w-7xl px-6 py-8">
         <Suspense>
-          <OrdersTable orders={orders} total={total} page={page} query={q} />
+          <OrdersTable orders={orders} total={total} page={page} query={q} status={status} amountMin={amountMin} amountMax={amountMax} dateFrom={dateFrom} dateTo={dateTo} />
         </Suspense>
       </div>
     </div>
